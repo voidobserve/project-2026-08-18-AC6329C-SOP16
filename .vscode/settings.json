@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "WS2812FX.H": "cpp",
+        "*.ld": "c",
+        "one_wire.h": "c"
+    }
+}
