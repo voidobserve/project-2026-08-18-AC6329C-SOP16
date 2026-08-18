@@ -87,7 +87,8 @@ static void user_uart_isr_cb(void *ut_bus, u32 status)
 int ct_uart_init_a(u32 baud)
 {
 	struct uart_platform_data_t u_arg = {0};
-    u_arg.tx_pin = IO_PORTA_07;
+    // u_arg.tx_pin = IO_PORTA_07;
+    u_arg.tx_pin = -1; // 不使用 TX 引脚及功能
     u_arg.rx_pin = IO_PORTB_06;
 
     u_arg.rx_cbuf = devBuffer_static;

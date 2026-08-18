@@ -2,37 +2,38 @@
 #define rf24g_h
 
 // 硬件按键值定义
-//3V 2.4G遥控
+//3V 28键2.4G遥控
+// 第一行按键
 #define RF24_K01 0x11	
 #define RF24_K02 0x12	
 #define RF24_K03 0x13	
 #define RF24_K04 0x14	
-
+// 第二行按键
 #define RF24_K05 0x21  //声控按键 没有单击	
 #define RF24_K06 0x22	
 #define RF24_K07 0x23	
 #define RF24_K08 0x24	
-
+// 第三行按键
 #define RF24_K09 0x31	
 #define RF24_K10 0x32	
 #define RF24_K11 0x33	
 #define RF24_K12 0x34
-
+// 第 四 行按键
 #define RF24_K13 0x41	
 #define RF24_K14 0x42	
 #define RF24_K15 0x43	
 #define RF24_K16 0x44	
-
+// 第 五 行按键
 #define RF24_K17 0x51	
 #define RF24_K18 0x52	
 #define RF24_K19 0x53	
 #define RF24_K20 0x54
-
+// 第 六 行按键
 #define RF24_K21 0x61	
 #define RF24_K22 0x62	
 #define RF24_K23 0x63	
 #define RF24_K24 0x64
-
+// 第 七 行按键
 #define RF24_K25 0x01	
 #define RF24_K26 0x02	
 #define RF24_K27 0x03	

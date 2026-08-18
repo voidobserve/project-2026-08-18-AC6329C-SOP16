@@ -173,8 +173,6 @@ static int spple_state_machine(struct application *app, enum app_state state, st
         switch (it->action) {
         case ACTION_SPPLE_MAIN:
             spple_app_start();
-            extern void my_main(void);
-            my_main();
             break;
         }
         break;

@@ -97,8 +97,8 @@ static int multi_state_machine(struct application *app, enum app_state state, st
         switch (it->action) {
         case ACTION_MULTI_MAIN:
             multi_app_start();
-            extern void my_main(void);
-            my_main();
+            extern void user_init(void);
+            user_init();
             break;
         }
         break;
