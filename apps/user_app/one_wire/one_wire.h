@@ -1,8 +1,10 @@
-#ifndef _ONE_WIRE_H
-#define _ONE_WIRE_H
+#ifndef __ONE_WIRE_H__
+#define __ONE_WIRE_H__
 
 #include "system/includes.h"
 
+// 与电机控制芯片通信的引脚
+#define MOTOR_DRIVER_PIN IO_PORTB_06
 
 typedef struct
 {
@@ -12,19 +14,24 @@ typedef struct
     // 011:区域1和区域2摇摆
     // 100:360°正转
     // 101:音乐律动
-    u8 mode;           //电机模式 
-    u8 period;          //000:  8S; 001:  13S; 010:  18S ;011:  21S ;100:  26S  //转速  
-    u8 dir;            //1:反转 0:正转  仅音乐律动模式有效
-    u8 music_mode;     //音乐律动下的转动模式
-    u8 motor_on_off;   //0:关闭电机  1：开启电机
-}base_ins_t;
-
+    u8 mode;   //电机模式
+    u8 period; //000:  8S; 001:  13S; 010:  18S ;011:  21S ;100:  26S  //转速
+    u8 dir;    //1:反转 0:正转  仅音乐律动模式有效
+    u8 music_mode;   //音乐律动下的转动模式
+    u8 motor_on_off; //0:关闭电机  1：开启电机
+} base_ins_t;
 
 extern u8 period[6];
 
+void one_wire_pin_init(void); 
+void one_wire_set_data(void); 
+void one_wire_send_data_enable(void);
+void one_wire_send_handle(void);
 
+void one_wire_send_enable(void);
+void one_wire_send_disable(void);
+u8 one_wire_send_is_finish(void);
+
+void one_wire_set_mode(u8 m);
 
 #endif
-
-
-

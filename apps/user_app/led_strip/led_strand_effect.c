@@ -14,6 +14,8 @@
 #include "tuya_ble_type.h"
 #include "asm/mcpwm.h"
 
+#include "one_wire.h"
+
 #include "user_config.h"
 
 extern void printf_buf(u8 *buf, u32 len);
@@ -231,8 +233,10 @@ void full_color_init(void)
 {
     extern void read_flash_device_status_init(void);
     read_flash_device_status_init();
+
     WS2812FX_init(1, fc_effect.sequence);
     WS2812FX_stop();
+
     WS2812FX_setBrightness(fc_effect.b);
     if (fc_effect.on_off_flag == DEVICE_ON) {
         soft_turn_on_the_light();
@@ -341,6 +345,7 @@ void fb_motor_state(u8 p)
     extern void zd_fb_2_app(u8 * p, u8 len);
     zd_fb_2_app(Send_buffer, 3);
 }
+
 void fb_motor_period()
 {
     uint8_t Send_buffer[6];
@@ -390,10 +395,13 @@ void soft_rurn_off_lights(void) //软关灯处理
 
     // ==========  关电机   ===========
     one_wire_set_mode(6); //配置模式
-    // os_time_dly(1);  //不能使用，会复位
-    enable_one_wire(); //使用发送数据
+    one_wire_set_data();
+    one_wire_send_data_enable();
     fb_motor_state(0);
-    fc_effect.base_ins.motor_on_off = 0;
+    /*
+        通过关灯而关电机的时候，不将 fc_effect.base_ins.motor_on_off 置为 0
+        下次开灯时要根据该变量来决定是否打开电机
+    */
 
     save_user_data_area3();
     printf("soft_rurn_off_light!!\n");
@@ -431,7 +439,6 @@ void special_w_close(void)
 /**************************************************软件开机*****************************************************/
 void soft_turn_on_the_light(void) //软开灯处理
 {
-
     pwr_on_effect_f = 1;
     pwr_on_effect_f1 = 1;
     bb = 1;
@@ -442,13 +449,24 @@ void soft_turn_on_the_light(void) //软开灯处理
     //============  开风扇   ===========
     open_fan();
 
-    //============  开电机   ===========
-    one_wire_set_mode(4);
-    // os_time_dly(1);//不能使用，会复位
-    enable_one_wire(); //启动发送电机数据
-    fb_motor_state(1);
+    // 根据记忆的电机状态，打开/关闭电机
+    if (fc_effect.base_ins.motor_on_off == 1) {
+        one_wire_set_mode(4);
+        one_wire_set_data();
+        one_wire_send_data_enable();
+        fb_motor_state(1);
+    } else {
+        one_wire_set_mode(6);
+        one_wire_set_data();
+        one_wire_send_data_enable();
+        fb_motor_state(0);
+    }
 
-    fc_effect.base_ins.motor_on_off = 1;
+#if USER_DEBUG_ENABLE
+    printf("fc_effect.base_ins.motor_on_off == %u\n",
+           (u16)fc_effect.base_ins.motor_on_off);
+#endif
+
     fb_led_on_off_state();
     set_fc_effect();
     save_user_data_area3();

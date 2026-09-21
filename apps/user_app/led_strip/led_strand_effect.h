@@ -137,4 +137,7 @@ void ls_set_colors(uint8_t n, color_t *c);
 u16 dynamic_speed_convert_by_percent(u8 percent);
 u8 dynamic_speed_convert_by_speed_val(u16 speed_val);
 
+
+void set_on_off_led(u8 on_off);
+
 #endif

@@ -34,10 +34,14 @@
 
 /*任务列表 */
 const struct task_info task_info_table[] = {
-    {"app_core", 1, 0, 640, 128},    {"sys_event", 7, 0, 256, 0},
-    {"btctrler", 4, 0, 512, 256},    {"btencry", 1, 0, 512, 128},
-    {"btstack", 3, 0, 768, 256},     {"systimer", 7, 0, 128, 0},
-    {"update", 1, 0, 512, 0},        {"dw_update", 2, 0, 256, 128},
+    {"app_core", 1, 0, 640, 128},
+    {"sys_event", 7, 0, 256, 0},
+    {"btctrler", 4, 0, 512, 256},
+    {"btencry", 1, 0, 512, 128},
+    {"btstack", 3, 0, 768, 256},
+    {"systimer", 7, 0, 128, 0},
+    {"update", 1, 0, 512, 0},
+    {"dw_update", 2, 0, 256, 128},
 #if (RCSP_BTMATE_EN)
     {"rcsp_task", 2, 0, 640, 0},
 #endif
@@ -49,7 +53,8 @@ const struct task_info task_info_table[] = {
 #endif
     {"usb_msd", 1, 0, 512, 128},
 #if TCFG_AUDIO_ENABLE
-    {"audio_dec", 3, 0, 768, 128},   {"audio_enc", 4, 0, 512, 128},
+    {"audio_dec", 3, 0, 768, 128},
+    {"audio_enc", 4, 0, 512, 128},
 #endif /*TCFG_AUDIO_ENABLE*/
 #if TCFG_KWS_VOICE_RECOGNITION_ENABLE
     {"kws", 2, 0, 256, 64},
@@ -57,7 +62,9 @@ const struct task_info task_info_table[] = {
 #if (TUYA_DEMO_EN)
     {"user_deal", 7, 0, 512, 512}, //定义线程 tuya任务调度
 #endif
-    {"user_task", 2, 0, 512, 512},   {0, 0},
+    {"user_task", 2, 0, 512, 512},
+    {"msg_task", 3, 0, 128, 128},
+    {0, 0},
 };
 
 APP_VAR app_var;
@@ -292,19 +299,18 @@ static const u16 timer_div[] = {
 **备注:
 **日期:
 *****************************************************************************************/
-#define USER_IR_ENABLE 0
+// #define USER_IR_ENABLE 0
 ___interrupt AT_VOLATILE_RAM_CODE void user_timer_isr(void) //50us
 {
-    static u8 timer_cnt;
-    TIMER_CON |= BIT(14);
+    // static u8 timer_cnt;
+    TIMER_CON |= BIT(14); // clear interrupt flag
 
 #if TCFG_RF433_ENABLE
     extern void timer125us_hook(void);
     timer125us_hook();
 #endif
 
-    // void one_wire_send(void);
-    // one_wire_send();  //steomotor
+    one_wire_send_handle();
 }
 
 void user_timer_init(void)
@@ -462,8 +468,59 @@ extern void power_on_effect(void);
 extern void test_uart_a(void);
 extern void special_w_close(void);
 
+/**
+ * @brief 接收并处理用户的消息队列
+ * 
+ * @param arg 未使用该变量
+ */
+void user_msg_handle_task(void *arg)
+{
+    int msg[32] = {0};
+    u8 i;
+
+    while (1) {
+
+        int ret = os_taskq_pend("msg_task", msg, 1);
+        // printf("recv msg\n");
+        // printf("ret %d\n", ret);
+        if (OS_TASKQ != ret) {
+            // 类型不对
+            continue;
+        }
+
+        if (msg[0] != Q_USER) {
+            // 不是用户消息
+            continue;
+        }
+
+        // 打印接收到的消息
+        // for (u8 i =0; i < ARRAY_SIZE(msg); i++)
+        // {
+        //     printf("msg [%u]: %d\n", (u16)i, msg[i]);
+        // }
+
+        switch (msg[1]) {
+        case USER_MSG_MOTOR_SEND_DATA: // 使能单线发送
+            // 防止电机ic接收时丢失了数据，这里要多发送几次
+            for (u8 i = 0; i < 3; i++) {
+                while (one_wire_send_is_finish()) {
+                    // 如果之前的数据没有发送完成，等待发送完成
+                    os_time_dly(1);
+                }
+
+                one_wire_send_enable();
+            }
+            break;
+
+        case USER_MSG_SAVE_TO_FALSH:
+            // save_user_data_enable();
+            break;
+        }
+    }
+}
+
 // 10ms调用一次
-void user_main_task(viod)
+void user_main_task(void *arg)
 {
     while (1) {
         rf24_key_handle();
@@ -493,9 +550,13 @@ void user_init(void)
 
     user_timer_init(); // 定时器2设置
     mic_adc_init();
-
-    ct_uart_init_a(9600);  
+    ct_uart_init_a(9600);
+    one_wire_pin_init();
+    /*
+        创建用户消息队列处理任务
+        需要放在给用户消息队列发送消息之前
+    */
+    task_create(user_msg_handle_task, NULL, "msg_task");
     full_color_init();
-
     task_create(user_main_task, NULL, "user_task");
 }

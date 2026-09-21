@@ -115,6 +115,13 @@ typedef struct
 #endif
 }color_t;
 
+enum
+{
+    USER_MSG_NONE = 0x00,
+    USER_MSG_MOTOR_SEND_DATA, // 给电机控制芯片发送数据
+    USER_MSG_SAVE_TO_FALSH, // 保存数据到flash
+};
+
 
 typedef enum
 {

@@ -28,8 +28,6 @@ void read_flash_device_status_init(void)
     ret = syscfg_read(CFG_USER_LED_LEDGTH_DATA, (u8 *)(&save_flash3),
                       sizeof(save_flash_t));
 
-    // os_time_dly(1);
-
     if (save_flash3.header != 0x55) //第一次上电
     {
 #if USER_DEBUG_ENABLE
@@ -48,14 +46,17 @@ void read_flash_device_status_init(void)
     }
 
 #if USER_DEBUG_ENABLE
-    printf("fc_effect.dream_scene.speed == %u\n", fc_effect.dream_scene.speed);
+    // printf("fc_effect.base_ins.motor_on_off == %u\n",
+    //        (u16)fc_effect.base_ins.motor_on_off);
+    printf("fc_effect.base_ins.period == %u\n", (u16)fc_effect.base_ins.period);
+
+    // printf("fc_effect.dream_scene.speed == %u\n", fc_effect.dream_scene.speed);
 #endif
 }
 
 // 把用户数据写到区域3
 void save_user_data_area3(void)
 {
-    // printf("\n save_user_data_area3");
     save_flash_t save_data;
     save_data.header = 0x55;
     save_data.ble_state = ble_state;

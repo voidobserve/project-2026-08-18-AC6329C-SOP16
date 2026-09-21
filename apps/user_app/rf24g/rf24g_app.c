@@ -171,7 +171,7 @@ void rf24_key_handle()
                     fc_effect.Now_state == ACT_CUSTOM) {
                     speed_fast();
                 }
-                
+
                 save_user_data_area3();
             } else if (key_value == RF24_K06) {
 
@@ -187,27 +187,25 @@ void rf24_key_handle()
                 }
 
                 save_user_data_area3();
-            } else if (key_value == RF24_K25) //电机
-            {
+            } else if (key_value == RF24_K25) {
+                //电机
                 extern void one_wire_set_mode(u8 m);
                 extern fb_motor_open_state(void);
-                one_wire_set_mode(4); //配置模式 360转
-                // os_time_dly(1);
-                enable_one_wire(); //使用发送数据
-                save_user_data_area3();
-                fb_motor_state(1);
-
                 fc_effect.base_ins.motor_on_off = 1;
+                one_wire_set_mode(4); //配置模式 360转
+                one_wire_set_data();
+                one_wire_send_data_enable();
+                save_user_data_area3();
+                fb_motor_state(1); 
             } else if (key_value == RF24_K26) {
                 extern void one_wire_set_mode(u8 m);
                 extern void fb_motor_close_state(void);
+                fc_effect.base_ins.motor_on_off = 0;
                 one_wire_set_mode(6); //配置模式 停止
-                // os_time_dly(1);
-                enable_one_wire(); //使用发送数据
+                one_wire_set_data();
+                one_wire_send_data_enable();
                 save_user_data_area3();
                 fb_motor_state(0);
-
-                fc_effect.base_ins.motor_on_off = 0;
             } else if (key_value == RF24_K27) {
 
                 extern void one_wire_set_period(u8 p);
@@ -216,8 +214,8 @@ void rf24_key_handle()
                     stepmotpor_speed_cnt--;
                 }
                 one_wire_set_period(period[stepmotpor_speed_cnt]);
-                // os_time_dly(1);
-                enable_one_wire();
+                one_wire_set_data();
+                one_wire_send_data_enable();
                 save_user_data_area3();
                 fb_motor_period();
 
@@ -229,8 +227,8 @@ void rf24_key_handle()
                     stepmotpor_speed_cnt++;
                 }
                 one_wire_set_period(period[stepmotpor_speed_cnt]);
-                // os_time_dly(1);
-                enable_one_wire();
+                one_wire_set_data();
+                one_wire_send_data_enable();
                 save_user_data_area3();
 
                 fb_motor_period();
@@ -335,12 +333,11 @@ void rf24_key_handle()
                     fc_effect.music.m = 3;
                     set_fc_effect();
                     break;
+                }
 
-                } //switch
                 save_user_data_area3();
             }
-
-        } //if(event_type == KEY_EVENT_CLICK)
+        }
 
     }
 
@@ -360,7 +357,7 @@ void rf24_key_handle()
 }
 
 void long_press_handle(void)
-{ 
+{
     extern u8 single_flow_flag;
     if ((get_on_off_state() == DEVICE_ON) && long_press_f) {
         long_press_cnt++;

@@ -876,48 +876,40 @@ void parse_zd_data(unsigned char *LedCommand)
             if (LedCommand[0] == 0x2F && LedCommand[1] == 0x07) {
                 extern void one_wire_set_period(u8 p);
                 one_wire_set_period(LedCommand[2]);
-                os_time_dly(1);
-                enable_one_wire();
+                one_wire_set_data();
+                one_wire_send_data_enable();
                 save_user_data_area3(); //保存参数配置到flash、
                 Send_buffer[6] = 0x2F;
                 Send_buffer[7] = 0x07;
                 Send_buffer[8] = LedCommand[2];
-                // app_send_user_data(ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE, Send_buffer,9, ATT_OP_AUTO_READ_CCC);
                 ble_comm_att_send_data(fd_handle,
                                        ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE,
                                        Send_buffer, 9, ATT_OP_AUTO_READ_CCC);
             }
             // --------------------------------设置电机开关-----------------------------------
-            if (LedCommand[0] == 0x2F && LedCommand[1] == 0x08) {
-
-                if (fc_effect.base_ins.motor_on_off == 0) //开电机
-                {
-                    extern void one_wire_set_mode(u8 m);
-                    //extern void enable_one_wire(void);
+            if (LedCommand[0] == 0x2F && LedCommand[1] == 0x08) { 
+                if (fc_effect.base_ins.motor_on_off == 0) {
+                    // 开电机 
                     one_wire_set_mode(4); //配置模式 360转
-                    os_time_dly(1);
-                    enable_one_wire();      //使用发送数据
+                    one_wire_set_data();
+                    one_wire_send_data_enable();
                     save_user_data_area3(); //保存参数配置到flash、
                     Send_buffer[6] = 0x2F;
                     Send_buffer[7] = 0x08;
-                    Send_buffer[8] = 0x01;
-                    // app_send_user_data(ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE, Send_buffer,9, ATT_OP_AUTO_READ_CCC);
+                    Send_buffer[8] = 0x01; 
                     ble_comm_att_send_data(
                         fd_handle, ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE,
-                        Send_buffer, 9, ATT_OP_AUTO_READ_CCC);
-
+                        Send_buffer, 9, ATT_OP_AUTO_READ_CCC); 
                     fc_effect.base_ins.motor_on_off = 1;
                 } else {
-                    extern void one_wire_set_mode(u8 m);
-                    //extern void enable_one_wire(void);
+                    // 关电机 
                     one_wire_set_mode(6); //配置模式 停止
-                    os_time_dly(1);
-                    enable_one_wire();      //使用发送数据
+                    one_wire_set_data();
+                    one_wire_send_data_enable();
                     save_user_data_area3(); //保存参数配置到flash、
                     Send_buffer[6] = 0x2F;
                     Send_buffer[7] = 0x08;
-                    Send_buffer[8] = 0x00;
-                    // app_send_user_data(ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE, Send_buffer,9, ATT_OP_AUTO_READ_CCC);
+                    Send_buffer[8] = 0x00; 
                     ble_comm_att_send_data(
                         fd_handle, ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE,
                         Send_buffer, 9, ATT_OP_AUTO_READ_CCC);
